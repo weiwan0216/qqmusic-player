@@ -234,6 +234,8 @@ async function renderPlaylistHome(fetchQQ = false) {
     const container = document.getElementById('playlist-results');
     const localPls = getLocalPlaylists();
 
+// 在 playlist.js 中找到 renderPlaylistHome 函数，修改 headerHtml 变量的内容：
+
     let headerHtml = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; position:relative;">
             <div style="font-size:16px; font-weight:bold; color:var(--text-main); display:flex; align-items:center; height:24px;">自建歌单 ${localPls.length}</div>
@@ -252,8 +254,8 @@ async function renderPlaylistHome(fetchQQ = false) {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
                 </button>
             </div>
-        </div>
-        <input type="file" id="import-file" style="display:none;" accept=".json">`;
+        </div>`; 
+        // 🚨 删除了原有的 <input type="file" id="import-file" style="display:none;" accept=".json">
 
     let html = headerHtml;
 
