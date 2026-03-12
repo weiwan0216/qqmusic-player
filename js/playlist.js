@@ -341,6 +341,10 @@ async function renderPlaylistHome(fetchQQ = false) {
 
 function bindPlaylistHomeEvents(container) {
     if (!container) return;
+    // 修复：检查是否已经绑定过，防止进出页面导致 click 事件无限叠加，多次触发下载
+    if (container.dataset.homeEventsBound) return;
+    container.dataset.homeEventsBound = 'true';
+
     container.addEventListener('click', (e) => {
         const action = e.target.closest('[data-action]');
         if (action) {

@@ -190,6 +190,10 @@ async function searchMusic() {
 
             if (fixedHeader) fixedHeader.innerHTML = listHeader;
             container.innerHTML = renderSongsHTML(data);
+            
+            // 修复：确保为搜索结果列表绑定事件委托
+            bindSongListEvents(container);
+            
             renderQueue();
         } else {
             container.innerHTML = '<div class="empty-state">未找到相关歌曲</div>';
@@ -273,6 +277,10 @@ function renderSongsHTML(list, localPlaylistId) {
  */
 function bindSongListEvents(container) {
     if (!container) return;
+    // 修复：防止在同一个容器上重复绑定监听器导致内存泄漏或重复执行
+    if (container.dataset.songEventsBound) return;
+    container.dataset.songEventsBound = 'true';
+
     container.addEventListener('click', (e) => {
         // MV 按钮
         const mvBadge = e.target.closest('.mv-badge');
@@ -611,7 +619,7 @@ async function fetchHitokoto() {
 function closeQueueOnOutsideClick(e) {
     const queueModal = document.getElementById('queue-modal');
     if (window.innerWidth < 850 && queueModal && queueModal.classList.contains('show')) {
-        // 修复：添加对 #btn-queue-mb 的判断，防止点击底部按钮时被立即关闭
+        // 防止点击底部按钮时被立即关闭
         if (!queueModal.contains(e.target) && !e.target.closest('#btn-queue-mb')) {
             queueModal.classList.remove('show');
         }
