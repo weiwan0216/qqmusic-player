@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QQmusic - Yoo</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="bg-image"></div>
+    <canvas id="particle-canvas"></canvas>
+    
+    <div id="greeting-popup">
+        <span class="greeting-emoji">😊</span> 天天开心！
+    </div>
+
+    <div class="desktop-top-logo">
+        QQmusic Player <span style="margin-left: 8px;">「<span id="hitokoto-text">加载中...</span>」</span>
+    </div>
+
+    <audio id="audio-player" preload="auto"></audio>
+
+    <div class="desktop-search-overlay" id="desktop-search-overlay">
+        <div class="ds-modal-content">
+            <div class="ds-header">
+                <div class="ds-title">支持搜索：歌手、歌名、专辑</div>
+                <button class="ds-close" id="ds-close-btn">&times;</button>
+            </div>
+            <div class="ds-input-wrapper">
+                <input type="text" id="ds-search-input" placeholder="输入你想听的内容...">
+                <button class="ds-search-btn" id="ds-search-btn">搜索</button>
+                <div class="smart-box" id="ds-smart-box" style="top: 100%; right: 0; left: 0; margin-top: 8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="nav-item active" id="nav-player" data-tab="player">播放列表</div>
+        <div class="nav-item" id="nav-playlist" data-tab="playlist">我的歌单</div>
+        <div class="nav-item" id="nav-search" data-tab="search">歌曲搜索</div>
+    </div>
+
+    <div class="main-player" id="main-player">
+        <div class="record-wrapper">
+            <div class="record-container">
+                <img src="https://y.qq.com/mediastyle/global/img/album_300.png" id="p-cover" class="cover-img" alt="cover">
+            </div>
+        </div>
+        <div class="song-info">
+            <div class="song-title" id="p-title">QQmusic Player</div>
+            <div class="song-singer" id="p-singer">等待播放... <span class="quality-badge" style="display:none;" id="p-quality"></span></div>
+        </div>
+        
+        <div class="lyric-wrapper">
+            <div class="lyric-seek-line" id="lyric-seek-line">
+                <div class="lyric-seek-dash"></div>
+                <span class="lyric-seek-time" id="lyric-seek-time">00:00</span>
+                <svg class="lyric-seek-btn" id="lyric-seek-btn" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            
+            <div class="lyric-box no-scroll" id="lyric-container">
+                <div class="lyric-line-group active"><div class="lyric-line-main">歌词将在此震撼显示</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed-side-tools desktop-only">
+        <button class="ctrl-btn" id="btn-download-side" title="下载高清音源">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btn-lyric-fs" title="沉浸歌词">
+            <svg id="lyric-fs-icon" viewBox="0 0 24 24" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+        </button>
+    </div>
+
+    <div class="ap-modal" id="create-playlist-modal">
+        <div class="create-pl-content">
+            <input type="text" id="new-pl-name" placeholder="输入新歌单名称...">
+            <button id="btn-submit-create">创建</button>
+        </div>
+    </div>
+
+    <div class="ap-modal" id="rename-playlist-modal">
+        <div class="create-pl-content">
+            <input type="text" id="rename-pl-name" placeholder="输入新名称...">
+            <button id="btn-submit-rename">保存</button>
+        </div>
+    </div>
+
+    <div class="ap-modal" id="add-playlist-modal">
+        <div class="add-pl-content">
+            <div class="add-pl-header">
+                <span style="font-size:16px; font-weight:bold;">添加到歌单</span>
+                <button class="add-pl-close" id="btn-close-add-modal">&times;</button>
+            </div>
+            <div class="add-pl-list" id="add-pl-list-container">
+            </div>
+        </div>
+    </div>
+
+    <div id="song-action-menu" class="song-action-menu">
+        <div class="sam-item" id="sam-add-btn">添加到歌单</div>
+        <div class="sam-item" id="sam-set-cover-btn">设为封面</div>
+        <div class="sam-item danger" id="sam-delete-btn">删除</div>
+    </div>
+
+    <div class="batch-modal" id="batch-modal">
+        <div class="batch-content">
+            <div class="batch-header">
+                <div class="bh-btn" id="batch-select-all">全选</div>
+                <div class="bh-title">批量操作</div>
+                <div class="bh-btn" id="btn-close-batch">关闭</div>
+            </div>
+            <div class="batch-list" id="batch-list-container">
+            </div>
+            <div class="batch-footer">
+                <div class="batch-delete-btn" id="batch-delete-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    <span>删除</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-panel" id="action-panel">
+        
+        <div class="panel-content active" id="panel-player">
+            <div class="action-body">
+                <div class="fixed-header-section desktop-only">
+                    <div class="desktop-action-bar">
+                        <div class="da-tag">当前歌单 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+                        <div class="da-title" id="player-da-title">Yoo</div>
+                    </div>
+                    <div class="desktop-list-header">
+                        <div class="col-song">歌曲</div>
+                        <div class="col-singer">歌手</div>
+                        <div class="col-album">专辑</div>
+                        <div class="col-action">操作</div>
+                    </div>
+                </div>
+                <div class="scrollable-section">
+                    <ul class="song-list" id="queue-list-desktop">
+                        <div class="empty-state" style="margin-top:10vh;">当前播放队列为空</div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-content" id="panel-playlist">
+            <div class="action-header mobile-only">
+                <div class="input-group">
+                    <input type="number" id="uin-input" placeholder="输入您的 QQ 账号..." value="3377682726">
+                    <button id="btn-fetch-playlist">提取</button>
+                </div>
+            </div>
+            <div class="action-body">
+                <div class="fixed-header-section" id="playlist-fixed-header">
+                    </div>
+                <div class="scrollable-section" id="playlist-results">
+                    </div>
+            </div>
+        </div>
+
+        <div class="panel-content" id="panel-search">
+            <div class="action-header mobile-only">
+                <div class="input-group">
+                    <input type="text" id="search-input" placeholder="输入你想听的歌曲、歌手、专辑...">
+                    <button id="btn-search-music">搜索</button>
+                    <div class="smart-box" id="smart-box"></div>
+                </div>
+            </div>
+            <div class="action-body">
+                <div class="fixed-header-section desktop-only" id="search-fixed-header"></div>
+                <div class="scrollable-section" id="search-results-container">
+                    <div id="search-results">
+                        <div class="empty-state" style="margin-top: 15vh;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:15px; color:var(--primary); opacity:0.6;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            连接海量曲库，随时随地发现好音乐
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="queue-modal" id="queue-modal">
+        <div class="queue-header">
+            <span>当前播放队列 (<span id="queue-count">0</span>)</span>
+            <button class="queue-close" id="btn-queue-close">收起</button>
+        </div>
+        <ul class="queue-list" id="queue-list-container">
+            <div class="empty-state" style="margin-top:30px; font-size:13px;">队列为空</div>
+        </ul>
+    </div>
+
+    <div class="footer-mb mobile-only">
+        <div class="mb-progress-row">
+            <span class="mb-time" id="time-current-mb">00:00</span>
+            <div class="mb-progress-wrapper" id="progress-bar-mb">
+                <div class="progress-track"><div class="progress-inner" id="progress-inner-mb"><div class="progress-dot"></div></div></div>
+            </div>
+            <span class="mb-time" id="time-total-mb">00:00</span>
+        </div>
+        <div class="mb-controls-row">
+            <div class="mb-song-info">
+                <img src="https://y.qq.com/mediastyle/global/img/album_300.png" id="f-cover-mb" alt="cover">
+                <div class="mb-title-scroll" id="f-title-mb">等待播放...</div>
+            </div>
+            <div class="mb-ctrl-buttons">
+                <button class="ctrl-btn" id="btn-prev-mb"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                <button class="ctrl-btn play-btn" id="play-pause-btn-mb"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+                <button class="ctrl-btn" id="btn-next-mb"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+                <button class="ctrl-btn" id="btn-download-mb"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
+                <button class="ctrl-btn mode-btn" id="btn-mode-mb" title="列表循环"><svg viewBox="0 0 24 24" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></button>
+                <button class="ctrl-btn" id="btn-queue-mb"><svg viewBox="0 0 24 24"><path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-pc desktop-only">
+        <div class="pc-controls">
+            <button class="ctrl-btn" id="btn-prev-pc"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+            <button class="ctrl-btn play-btn" id="play-pause-btn-pc"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="ctrl-btn" id="btn-next-pc"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+            <button class="ctrl-btn mode-btn" id="btn-mode-pc" title="列表循环">
+                <svg viewBox="0 0 24 24" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+            </button>
+        </div>
+        <span class="pc-time" id="time-current-pc">00:00</span>
+        <div class="pc-progress-wrapper" id="progress-bar-pc">
+            <div class="progress-track"><div class="progress-inner" id="progress-inner-pc"><div class="progress-dot"></div></div></div>
+        </div>
+        <span class="pc-time" id="time-total-pc">00:00</span>
+        <div class="pc-volume-section">
+            <svg class="vol-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <div class="vol-bar" id="vol-bar-pc">
+                <div class="vol-track"><div class="vol-inner" id="vol-inner-pc"><div class="vol-dot"></div></div></div>
+            </div>
+            <button class="ctrl-btn" id="btn-fullscreen-pc" title="全屏/退出全屏" style="margin-left: 10px;">
+                <svg id="fs-icon-pc" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="mv-modal" id="mv-modal">
+        <div class="mv-header">
+            <div class="mv-title" id="mv-title">正在播放 MV</div>
+            <button class="mv-close" id="btn-close-mv">关闭 MV</button>
+        </div>
+        <video class="mv-player" id="mv-video" controls></video>
+    </div>
+
+    <input type="file" id="import-file" style="display:none;" accept=".json">
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/playlist.js"></script>
+    <script src="js/batch.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
